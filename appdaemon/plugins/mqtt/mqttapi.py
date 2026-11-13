@@ -1,7 +1,27 @@
-import appdaemon.adbase as adbase
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+
 import appdaemon.adapi as adapi
+import appdaemon.adbase as adbase
 from appdaemon.appdaemon import AppDaemon
-import appdaemon.utils as utils
+from appdaemon.utils.threading import sync_decorator
+
+if TYPE_CHECKING:
+    from ...models.config import AppConfig
+    from .mqttplugin import MqttPlugin
+
+
+# Check if the module is being imported using the legacy method
+if __name__ == Path(__file__).name:
+    from appdaemon.logging import Logging
+
+    # It's possible to instantiate the Logging system again here because it's a singleton, and it will already have been
+    # created at this point if the legacy import method is being used by an app. Using this accounts for the user maybe
+    # having configured the error logger to use a different name than 'Error'
+    Logging().get_error().warning(
+        "Importing 'mqttapi' directly is deprecated and will be removed in a future version. "
+        "To use the Mqtt plugin use 'from appdaemon.plugins import mqtt' instead.",
+    )
 
 
 class Mqtt(adbase.ADBase, adapi.ADAPI):
@@ -24,14 +44,17 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
     Making Calls to MQTT
     --------------------
 
-    AD API's ``call_service()`` is used to carry out service calls from within an AppDaemon app. This allows the app to carry out one of the following services:
+    AD API's ``call_service()`` is used to carry out service calls from within an AppDaemon app.
+    This allows the app to carry out one of the following services:
 
       - ``Publish``
       - ``Subscribe``
       - ``Unsubscribe``
 
-    By simply specifying within the function what is to be done. It uses configuration specified in the plugin configuration which simplifies the call within the app significantly. Different brokers can be accessed within an app, as long as they are all declared
-    when the plugins are configured, and using the ``namespace`` parameter.
+    By simply specifying within the function what is to be done. It uses configuration specified in
+    the plugin configuration which simplifies the call within the app significantly. Different
+    brokers can be accessed within an app, as long as they are all declared when the plugins are
+    configured, and using the ``namespace`` parameter.
 
     Examples
     ^^^^^^^^
@@ -43,41 +66,23 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
         # if wanting to unsubscribe a topic from a broker in a different namespace
         self.call_service("unsubscribe", topic = "homeassistant/bedroom/light", namespace = "mqtt2")
 
-    The MQTT API also provides 3 convenience functions to make calling of specific functions easier an more readable. These are documented in the following section.
+    The MQTT API also provides 3 convenience functions to make calling of specific functions easier
+    an more readable. These are documented in the following section.
     """
 
-    def __init__(
-        self,
-        ad: AppDaemon,
-        name,
-        logging,
-        args,
-        config,
-        app_config,
-        global_vars,
-    ):
-        """Constructor for the app.
+    _plugin: "MqttPlugin"
 
-        Args:
-            ad: AppDaemon object.
-            name: name of the app.
-            logging: reference to logging object.
-            args: app arguments.
-            config: AppDaemon config.
-            app_config: config for all apps.
-            global_vars: reference to global variables dict.
-
-        """
+    def __init__(self, ad: AppDaemon, config_model: "AppConfig"):
         # Call Super Classes
-        adbase.ADBase.__init__(self, ad, name, logging, args, config, app_config, global_vars)
-        adapi.ADAPI.__init__(self, ad, name, logging, args, config, app_config, global_vars)
+        adbase.ADBase.__init__(self, ad, config_model)
+        adapi.ADAPI.__init__(self, ad, config_model)
 
     #
     # Override listen_event()
     #
 
-    @utils.sync_wrapper
-    async def listen_event(self, callback, event=None, **kwargs):
+    @sync_decorator
+    async def listen_event(self, callback: Callable, event: str = None, **kwargs: Optional[Any]) -> str:
         """Listens for changes within the MQTT plugin.
 
         Unlike other plugins, MQTT does not keep state. All MQTT messages will have an event
@@ -88,8 +93,8 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
             callback: Function to be invoked when the requested event occurs. It must conform
                 to the standard Event Callback format documented `Here <APPGUIDE.html#about-event-callbacks>`__.
             event: Name of the event to subscribe to. Can be the declared ``event_name`` parameter
-                as specified in the plugin configuration. If no event is specified, ``listen_event()``
-                will subscribe to all MQTT events within the app's functional namespace.
+                as specified in the plugin configuration. If no event is specified, ``listen_event()`` will
+                subscribe to all MQTT events within the app's functional namespace.
             **kwargs (optional): One or more keyword value pairs representing App specific parameters to
                 supply to the callback. If the keywords match values within the event data, they will act
                 as filters, meaning that if they don't match the values, the callback will not fire.
@@ -99,7 +104,7 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
                 generate an event as specified in the config; if we want to listen to a specific topic or
                 wildcard, ``topic`` or ``wildcard`` can be passed in, and used to filter the callback by
                 supplying them as keyword arguments. If you include keyword values, the values supplied
-                to the ``listen_event()``call must match the values in the event or it will not fire.
+                to the ``listen_event()`` call must match the values in the event or it will not fire.
                 If the keywords do not match any of the data in the event they are simply ignored.
 
                 Filtering will work with any event type, but it will be necessary to figure out
@@ -114,7 +119,7 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
 
             binary (bool, optional): If wanting the payload to be returned as binary, this should
                 be specified. If not given, AD will return the payload as decoded data. It should
-                be noted that it is not possible to have different apps receieve both binary and non-binary
+                be noted that it is not possible to have different apps receive both binary and non-binary
                 data on the same topic
 
         Returns:
@@ -153,7 +158,7 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
         """
 
         namespace = self._get_namespace(**kwargs)
-        plugin = await self.AD.plugins.get_plugin_object(namespace)
+        plugin: "MqttPlugin" = self.AD.plugins.get_plugin_object(namespace)
         topic = kwargs.get("topic", kwargs.get("wildcard"))
 
         if plugin is not None:
@@ -166,7 +171,6 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
                     self.logger.warning("Cannot register for binary data, since no topic nor wildcard given")
 
             else:
-
                 if topic is not None and hasattr(plugin, "mqtt_binary_topics") and topic in plugin.mqtt_binary_topics:
                     self.logger.debug("Removing topic %s, from binary payload topics", topic)
                     plugin.remove_mqtt_binary(topic)
@@ -176,7 +180,8 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
     #
     # service calls
     #
-    def mqtt_publish(self, topic, payload=None, **kwargs):
+
+    def mqtt_publish(self, topic: str, payload: Any = None, **kwargs: Optional[Any]) -> None:
         """Publishes a message to a MQTT broker.
 
         This helper function used for publishing a MQTT message to a broker, from within
@@ -223,7 +228,19 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
         result = self.call_service(service, **kwargs)
         return result
 
-    def mqtt_subscribe(self, topic, **kwargs):
+    def _run_service_call(self, task: str, topic: str | list[str], **kwargs: Optional[Any]) -> None:
+        """Used to process the subscribe/unsubscribe service calls"""
+
+        # first we validate the topic
+        if not isinstance(topic, (str, list)):
+            raise ValueError(f"The given topic {topic} is not supported. Please only strs and lists are supported")
+
+        kwargs["topic"] = topic
+        service = f"mqtt/{task}"
+        return self.call_service(service, **kwargs)
+
+
+    def mqtt_subscribe(self, topic: Union[str, list], **kwargs: Optional[Any]) -> None:
         """Subscribes to a MQTT topic.
 
         This helper function used for subscribing to a topic on a broker,
@@ -242,7 +259,7 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
         parameter.
 
         Args:
-            topic (str): The topic to be subscribed to on the broker
+            topic (str|list): The topic to be subscribed to on the broker
                 (e.g., ``homeassistant/bedroom/light``).
             **kwargs (optional): Zero or more keyword arguments.
 
@@ -256,15 +273,13 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
 
         Examples:
             >>> self.mqtt_subscribe("homeassistant/bedroom/light")
+            >>> self.mqtt_subscribe(["homeassistant/bedroom/light", "zigbee2mqtt/Living Room Light"])
 
         """
 
-        kwargs["topic"] = topic
-        service = "mqtt/subscribe"
-        result = self.call_service(service, **kwargs)
-        return result
+        return self._run_service_call("subscribe", topic, **kwargs)
 
-    def mqtt_unsubscribe(self, topic, **kwargs):
+    def mqtt_unsubscribe(self, topic: Union[str, list], **kwargs: Optional[Any]) -> None:
         """Unsubscribes from a MQTT topic.
 
         A helper function used to unsubscribe from a topic on a broker,
@@ -284,7 +299,7 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
         parameter.
 
         Args:
-            topic (str): The topic to be unsubscribed from on the broker
+            topic (str|list): The topic to be unsubscribed from on the broker
                 (e.g., ``homeassistant/bedroom/light``).
             **kwargs (optional): Zero or more keyword arguments.
 
@@ -301,13 +316,10 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
 
         """
 
-        kwargs["topic"] = topic
-        service = "mqtt/unsubscribe"
-        result = self.call_service(service, **kwargs)
-        return result
+        return self._run_service_call("unsubscribe", topic, **kwargs)
 
-    @utils.sync_wrapper
-    async def is_client_connected(self, **kwargs):
+    @sync_decorator
+    async def is_client_connected(self, **kwargs: Optional[Any]) -> bool:
         """Returns ``TRUE`` if the MQTT plugin is connected to its broker, ``FALSE`` otherwise.
 
         This a helper function used to check or confirm within an app if the plugin is connected
@@ -328,7 +340,7 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
                 In most cases it is safe to ignore this parameter.
 
         Returns:
-            None.
+            Boolean.
 
         Examples:
             Check if client is connected, and send data.
@@ -342,5 +354,5 @@ class Mqtt(adbase.ADBase, adapi.ADAPI):
 
         """
         namespace = self._get_namespace(**kwargs)
-        plugin = await self.AD.plugins.get_plugin_object(namespace)
+        plugin = self.AD.plugins.get_plugin_object(namespace)
         return await plugin.mqtt_client_state()

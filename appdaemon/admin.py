@@ -1,14 +1,19 @@
 import os
 import traceback
+from typing import TYPE_CHECKING
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-import appdaemon.utils as utils
-from appdaemon.appdaemon import AppDaemon
+from .utils.threading import run_in_executor
+
+if TYPE_CHECKING:
+    from .appdaemon import AppDaemon
 
 
 class Admin:
-    def __init__(self, config_dir, logger, ad: AppDaemon, **kwargs):
+    name: str = "_admin"
+
+    def __init__(self, config_dir, logger, ad: "AppDaemon", **kwargs):
         #
         # Set Defaults
         #
@@ -46,7 +51,6 @@ class Admin:
     #
 
     async def admin_page(self, scheme, url):
-
         try:
             params = {"transport": self.transport, "title": self.title}
 
@@ -61,7 +65,7 @@ class Admin:
 
             # Entities
 
-            params["namespaces"] = await self.AD.state.list_namespaces()
+            params["namespaces"] = self.AD.state.list_namespaces()
 
             env = Environment(
                 loader=FileSystemLoader(self.template_dir),
@@ -69,7 +73,7 @@ class Admin:
             )
 
             template = env.get_template("admin.jinja2")
-            rendered_template = await utils.run_in_executor(self, template.render, params)
+            rendered_template = await run_in_executor(self, template.render, params)
 
             return rendered_template
 

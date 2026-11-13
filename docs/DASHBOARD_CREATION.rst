@@ -7,7 +7,7 @@ Dashboard Creation
    UI
 
 Dashboard Creation
------------------------
+------------------
 
 Dashboard configuration is simple yet very powerful. Dashboards can be
 created in single files or made modular for reuse of blocks of widgets.
@@ -432,7 +432,7 @@ For example:
         - label(2x2),clock(2x2)
 
 In this example of a header, we reference a clock and a label in the
-layout. We can re-use this header, but in order to make the label change
+layout. We can reuse this header, but in order to make the label change
 for every page we use it on we actually define it in the dashboard file
 itself, and include the header in the layout:
 
@@ -625,8 +625,8 @@ the dashboard url, for instance:
 ``http://192.168.1.20:5050/mypanel?deviceid=kitchentablet``
 
 HADashboard will try to store the deviceid on the device so you don't need
-to use this parameter everytime. You may use it again if you want to set
-a new deviceid or if you cleaned device's cookies or the device doesnt
+to use this parameter every time. You may use it again if you want to set
+a new deviceid or if you cleaned device's cookies or the device doesn't
 support it.
 
 
@@ -639,13 +639,13 @@ navigate
 Force one or more connected dashboards to navigate to a new page
 
 Arguments:
-^^^^^^^^^
+^^^^^^^^^^
 
 ``target`` - Name of the new Dashboard to navigate to, e.g.
 ``SensorPanel`` - this is not a URL.
-``timeout`` - length of time to stay on the new dashboard before returning to
-the original. This argument is optional, and if not specified, the navigation
+``timeout`` - length of time to stay on the new dashboard before returning to the original. This argument is optional, and if not specified, the navigation
 will be permanent.
+``skin`` - the skin to use for the new dashboard. This is optional, and if not specified, the skin will be the same as the original dashboard.
 
 Note that if there is a click or touch on the new panel before the
 timeout expires, the timeout will be cancelled.
@@ -747,7 +747,7 @@ binary_sensor
 A widget to monitor a binary\_sensor
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the binary\_sensor
 
@@ -779,7 +779,7 @@ camera
 A widget to display a refreshing camera image on the dashboard.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -   ``entity`` the entity\_id of the camera
 -   ``base_url`` the URL to your Home Assistant install. If you wish to access
@@ -799,6 +799,33 @@ Style Arguments:
 -  ``widget_style``
 -  ``title_style``
 
+heater
+~~~~~~
+
+A widget to control a heater or fan
+
+Mandatory arguments:
+^^^^^^^^^^^^^^^^^^^^
+
+- ``icon_entity`` - the entity_id of the switch function
+- ``slider_entity`` - the entity_id of the input_number
+
+Optional Arguments:
+^^^^^^^^^^^^^^^^^^^
+
+title - the title displayed on the tile
+title2 - a second line of title text
+
+Style Arguments:
+^^^^^^^^^^^^^^^^
+
+- ``title_style``
+- ``title2_style``
+- ``slider_style``
+- ``widget_style``
+- ``icon_style_active``
+- ``icon_style_inactive``
+
 climate
 ~~~~~~~
 .. figure:: images/climate.png
@@ -807,7 +834,7 @@ climate
 A widget to monitor and control a climate entity
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the climate entity
 
@@ -877,14 +904,12 @@ Style Arguments:
 
 cover
 ~~~~~
-.. figure:: images/cover.png
-   :alt: cover
 
 A widget to monitor and activate a cover. At this time only the open and
 close actions are supported.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the cover
 
@@ -968,14 +993,12 @@ Style Arguments:
 -  ``state_text_style``
 
 entitypicture
-~~~~~~
-.. figure:: images/entity_picture.png
-   :alt: entity picture
+~~~~~~~~~~~~~
 
 A widget to display entity picture
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity to display entity_picture attribute
 
@@ -1022,7 +1045,7 @@ high for the 3 possible settings, that can be changed if needed.
 (for example for a fan that has 5 speeds)
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity_id of the fan
 
@@ -1037,6 +1060,7 @@ Optional Arguments:
 Example:
 
 .. code:: yaml
+
    fan1:
          widget_type: fan
          entity: fan.fan1
@@ -1067,11 +1091,26 @@ Style Arguments:
 
 gauge
 ~~~~~
-.. figure:: images/guage.png
-   :alt: guage
+.. figure:: images/gauge.png
+   :alt: gauge
 
 A widget to report on numeric values for sensors in Home Assistant in a
 gauge format.
+
+The gauge can optionally accept 3 style colors. These must be in hex RGB format, and the graph will interpolate the color of the level bar in between them. For example:
+
+.. code-block::
+
+    gauge:
+      widget_type: gauge
+      entity: sensor.processor_use
+      title: gauge
+      max: 400
+      min: 0
+      low_color: "#ff0000"
+      medium_color: "#00ff00"
+      high_color: "#0000ff"
+      units: "%"
 
 Mandatory Arguments:
 ^^^^^^^^^^^^^^^^^^^^
@@ -1111,7 +1150,7 @@ group
 A widget to monitor and control a group of lights
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the group
 
@@ -1187,7 +1226,7 @@ Each icon can have a service call assigned by post_service_active entry - on ico
 The default entry icon and style will be used if the state doesn't match any in the list - meaning that it is not necessary to define all states if only 1 or 2 actually matter.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the binary\_sensor
 -  ``icons`` - a list of icons, styles and service calls to be applied for various states
@@ -1217,7 +1256,7 @@ iframe
 A widget to display other content within the dashboard
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``url_list`` - a list of 1 or more URLs to cycle though. or
 -  ``img_list`` - a list of 1 or more Image URLs to cycle through.
@@ -1281,7 +1320,7 @@ input_boolean
 A widget to monitor and activate an input\_boolean
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the input\_boolean
 
@@ -1312,7 +1351,7 @@ input_datetime
 A widget to monitor and control an input\_datetime
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the input\_datetime
 
@@ -1340,7 +1379,7 @@ input_number
 A widget to monitor and control an input\_number
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the input\_number
 
@@ -1400,7 +1439,7 @@ input_slider
 An alternate widget to monitor and control an input number, using plus and minus buttons instead of a slider.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the input\_number
 
@@ -1433,7 +1472,7 @@ input_text
 A widget to monitor and control an input\_text
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the input\_text
 
@@ -1461,13 +1500,14 @@ javascript
 A widget to run an arbitrary JavaScript command.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 - ``command`` - the JavaScript command to be run.
 
 e.g.
 
 .. code:: yaml
+
    command: "alert('hello');"
 
 
@@ -1496,7 +1536,7 @@ label
 A widget to show a simple static text string
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 None
 
@@ -1523,7 +1563,7 @@ light
 A widget to monitor and control a dimmable light
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the light
 
@@ -1607,7 +1647,7 @@ easily change this behavior by setting active and inactive styles if you
 prefer.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the lock
 
@@ -1632,8 +1672,6 @@ Style Arguments:
 
 london_underground
 ~~~~~~~~~~~~~~~~~~
-.. figure:: images/london_underground.png
-   :alt: london underground
 
 A widget to report on the status of a London Underground line and
 provide the reason for delays if there are any. Requires the London
@@ -1695,7 +1733,7 @@ media_player
 A widget to monitor and control a media player
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the media player
 
@@ -1736,7 +1774,7 @@ when it is set to a specific value. Also allows scripts to be run when
 activated.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the ``input_select``
 -  ``mode`` - value of the input select to show as active
@@ -1771,7 +1809,7 @@ A widget to navigate to a new URL, intended to be used for switching
 between dashboards.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 None, but either ``url`` or ``dashboard`` must be specified.
 
@@ -1896,6 +1934,95 @@ Style Arguments:
 -  ``title2_style``
 -  ``state_text_style``
 
+
+pirateweather
+~~~~~~~~~~~~~
+.. figure:: images/weather.png
+   :alt: pirateweather
+
+Up to date weather reports. By default, it's configured to work with pirateweather
+sensors. To use all the features, you need to add these sensors to the
+``Monitored conditions`` option in the configuration for the Home Assistant
+Pirate Weather integration:
+
+-  Icon
+-  Precipitation Type
+-  Precipitation Intensity
+-  Precipitation Probability
+-  Temperature
+-  Apparent Temperature
+-  Humidity
+-  Wind Speed
+-  Wind Bearing
+-  Pressure
+
+To have the forecast displayed set ``show_forecast`` to 1. For it to work you
+additionally need to add 1 to the ``Daily forecasts sensors`` option in the configuration
+for the Home Assistant Pirate Weather integration. To use all the forecast features, you
+need to add these sensors to monitored_conditions:
+
+-  Temperature High
+-  Temperature Low
+
+.. code:: yaml
+
+    forecast:
+      - 1
+
+Mandatory arguments:
+^^^^^^^^^^^^^^^^^^^^
+
+None
+
+Optional Arguments:
+^^^^^^^^^^^^^^^^^^^
+
+- ``title``
+- ``show_forecast`` - show the forecast
+- ``prefer_icons`` - use icons instead of text
+- ``forecast_title`` - title of the forecast if enabled
+- ``sensors`` - list of sensors used by the widget
+
+You can change the entities used by the widget by overwriting their values
+in the ``sensors`` key in configuration.
+
+Example with default values:
+
+.. code:: yaml
+
+    sample_weather:
+      widget_type: weather
+      title: Today
+      show_forecast: 1
+      prefer_icons: 1
+      forecast_title: Tomorrow
+      sensors:
+        icon: sensor.pirateweather_icon
+        temperature: sensor.pirateweather_temperature
+        apparent_temperature: sensor.pirateweather_apparent_temperature
+        humidity: sensor.pirateweather_humidity
+        precip_probability: sensor.pirateweather_precip_probability
+        precip_intensity: sensor.pirateweather_precip_intensity
+        precip_type: sensor.pirateweather_precip
+        pressure: sensor.pirateweather_pressure
+        wind_speed: sensor.pirateweather_wind_speed
+        wind_bearing: sensor.pirateweather_wind_bearing
+        forecast_icon: sensor.pirateweather_icon_1
+        forecast_temperature_min: sensor.pirateweather_daily_low_temperature_1
+        forecast_temperature_max: sensor.pirateweather_daily_high_temperature_1
+        forecast_precip_probability: sensor.pirateweather_precip_probability_1
+        forecast_precip_type: sensor.pirateweather_precip_1
+
+Style Arguments:
+^^^^^^^^^^^^^^^^^^^
+
+-  ``widget_style``
+-  ``main_style``
+-  ``unit_style``
+-  ``sub_style``
+-  ``sub_unit_style``
+-  ``title_style``
+
 radial
 ~~~~~~
 .. figure:: images/radial.png
@@ -1909,7 +2036,7 @@ Mandatory Arguments:
 -  ``entity`` - the entity\_id of the alarm to be monitored
 - ``settings`` - a list if values describing the gauge with the following entries:
 
-- title - title of the guage
+- title - title of the gauge
 - minValue - minimum value to display
 - maxValue - maximum value to display
 - majorTicks - Where to mark major values, a list
@@ -1948,7 +2075,7 @@ reload
 A widget to reload the current dashboard.
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 None.
 
@@ -2035,7 +2162,7 @@ scene
 A widget to activate a scene
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the scene
 
@@ -2066,7 +2193,7 @@ script
 A widget to run a script
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the script
 
@@ -2077,7 +2204,7 @@ Optional Arguments:
 -  ``title2`` - a second line of title text
 -  ``state_text``
 -  ``state_map``
--  ``enabled`` - if set to 0 the switch cant be pressed but only shows status
+-  ``enabled`` - if set to 0 the switch can't be pressed but only shows status
 -  ``momentary`` - after the set amount of milliseconds the old state returns (momentary button)
 
 Style Arguments:
@@ -2092,14 +2219,14 @@ Style Arguments:
 -  ``title2_style``
 
 sequence
-~~~~~
+~~~~~~~~
 .. figure:: images/sequence.png
    :alt: sequence
 
 A widget to run a sequence
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the sequence e.g. ``sequence.office_on``
 
@@ -2190,7 +2317,7 @@ switch
 A widget to monitor and activate a switch
 
 Mandatory arguments:
-^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 -  ``entity`` - the entity\_id of the switch
 
@@ -2201,7 +2328,7 @@ Optional Arguments:
 -  ``title2`` - a second line of title text
 -  ``state_text``
 -  ``state_map``
--  ``enabled`` - if set to 0 the switch cant be pressed but only shows status
+-  ``enabled`` - if set to 0 the switch can't be pressed but only shows status
 -  ``momentary`` - after the set amount of milliseconds the old state returns (momentary button)
 
 Style Arguments:
@@ -2271,8 +2398,6 @@ monitored_conditions:
 
 -  temperature
 -  apparent\_temperature
--  temperature_min
--  temperature_max
 -  humidity
 -  precip\_probability
 -  precip\_intensity
@@ -2283,13 +2408,22 @@ monitored_conditions:
 -  icon
 
 To have the forecast displayed set ``show_forecast`` to 1. For it to work you
-additionally, need to add the forecast option in dark_sky Home Assistant
-configuration.
+additionally need to add the forecast option in dark_sky Home Assistant
+configuration:
 
 .. code:: yaml
 
     forecast:
       - 1
+
+To use all the forecast features, you need to add these
+sensors to monitored_conditions:
+
+-  temperature_low
+-  temperature_high
+
+Forecasts (1 day in the future) can be displayed for the weather icon, min
+and max temperature, precipitation probability and precipitation type.
 
 Mandatory arguments:
 ^^^^^^^^^^^^^^^^^^^^
@@ -2308,7 +2442,7 @@ Optional Arguments:
 You can change the entities used by the widget by overwriting their values
 in the ``sensors`` key in configuration.
 
-Example with default values:
+Example with default values plus wind forecast:
 
 .. code:: yaml
 
@@ -2525,11 +2659,11 @@ to the head includes or body includes.
 Custom widgets require their own special .js files, but to trigger a function
 from the javascript widget or from the body includes you can create a
 ``custom_javascript`` directory in the configuration directory.
-All files that are placed in that directory will automaticly included in
+All files that are placed in that directory will automatically included in
 Dashboard.
 All functions you place in a .js file inside that directory will be
 available everywhere in dashboard.
-Remember that you do this on your own responsibility. javscript code in
+Remember that you do this on your own responsibility. javascript code in
 those files can break Dashboards, and create vulnerabilities.
 
 Example Dashboards

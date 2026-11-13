@@ -154,6 +154,8 @@ This is useful for static fields such as titles and simplifies the widget code s
 Fields that are not required to be initialized must still be present and set to ``""``.
 Again, it is possible to map values directly from the Instantiated Widget straight through to the Base Widget.
 
+.. _HADashboard Widget Icons:
+
 Icons
 ~~~~~
 
@@ -181,7 +183,7 @@ These could be different in another skin.
 
 In the base widget, there is code to change the icon from the on icon to the off icon in response to a
 touch or a state change triggered elsewhere.
-The Base Widget has access to theses icon names when executing that code.
+The Base Widget has access to these icon names when executing that code.
 
 Static Icons
 ~~~~~~~~~~~~
@@ -295,7 +297,7 @@ Widget HTML Files
 
 The HTML files exist to provide a basic layout for the widget and insert the styles. They are usually fairly simple.
 
-By convention, the various tag types have styling suitable for some common elements although that can be overidden in
+By convention, the various tag types have styling suitable for some common elements although that can be overridden in
 the css file or the skin:
 
 - <h1> is styled for small text such as titles or state text
@@ -344,14 +346,14 @@ Widget CSS Files
 ~~~~~~~~~~~~~~~~
 
 CSS files in widgets are used primarily for positioning of elements since most of the styling occurs in the skins.
-Since each widget must have a unique id, the ``{id}}`` piece of each selector name will be substituted with a unique
+Since each widget must have a unique id, the ``{id}`` piece of each selector name will be substituted with a unique
 id ensuring that even if there are multiple instances of the same widget they will all behave correctly.
 
 Other than that, this is standard CSS used for laying out the various HTML elements appropriately.
 
 Here is an example that works with the HTML above.
 
-.. code:: css
+.. code::
 
     .widget-baselight-{{id}} {
         position: relative;
@@ -537,7 +539,7 @@ The next step is to set up the widget to respond to various events such as butto
 
 
 There could be occasions when it is desirable to register for an event, and get the whole event data.
-This is possible by registering and passing "DOMEventData" and boolen `true`, so that dashboard is aware of the fact the entire
+This is possible by registering and passing "DOMEventData" and boolean `true`, so that dashboard is aware of the fact the entire
 event data is required. Below is an example
 
 .. code:: javascript

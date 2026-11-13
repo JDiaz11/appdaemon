@@ -1,16 +1,15 @@
-import traceback
+import asyncio
 import json
+import traceback
 
 import aiohttp
 from aiohttp import web
-import asyncio
 
 from appdaemon import utils as utils
 
 
 class WSHandler:
     def __init__(self, ADStream, app, path, ad):
-
         self.AD = ad
         self.ADStream = ADStream
         self.app = app
@@ -25,7 +24,7 @@ class WSHandler:
         # We have a connection
         #
         # Add handler
-        await self.ADStream.on_connect(request)
+        return await self.ADStream.on_connect(request)
 
     def makeStream(self, ad, request, **kwargs):
         return WSStream(ad, request, **kwargs)
@@ -33,7 +32,6 @@ class WSHandler:
 
 class WSStream:
     def __init__(self, ad, request, **kwargs):
-
         self.request = request
         self.on_message = kwargs["on_message"]
         self.on_disconnect = kwargs["on_disconnect"]
@@ -78,6 +76,7 @@ class WSStream:
             self.logger.debug("Closing websocket ...")
             await self.ws.close()
             self.logger.debug("Done")
+        return self.ws
 
     async def sendclient(self, data):
         try:

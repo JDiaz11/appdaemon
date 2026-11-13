@@ -1,18 +1,20 @@
-import os
 import ast
-import re
-import yaml
-from jinja2 import Environment, BaseLoader, FileSystemLoader, select_autoescape
-import traceback
-import functools
-import time
 import cProfile
-import io
-import pstats
 import datetime
+import functools
+import io
+import os
+import pstats
+import re
+import time
+import traceback
 from collections import OrderedDict
 
-import appdaemon.utils as ha
+import yaml
+from jinja2 import BaseLoader, Environment, FileSystemLoader, select_autoescape
+
+from .utils.file import check_path
+from .utils.file import yaml as ad_yaml
 
 
 class Dashboard:
@@ -81,8 +83,8 @@ class Dashboard:
             if not os.path.isdir(os.path.join(self.compile_dir, "css")):
                 os.makedirs(css)
 
-            ha.check_path("css", self.logger, css, permissions="rwx")
-            ha.check_path("javascript", self.logger, js, permissions="rwx")
+            check_path("css", self.logger, css, permissions="rwx")
+            check_path("javascript", self.logger, js, permissions="rwx")
 
         except Exception:
             self.logger.warning("-" * 60)
@@ -162,7 +164,7 @@ class Dashboard:
             for varline in fields:
                 if isinstance(fields[varline], dict):
                     fields[varline] = self._resolve_css_params(fields[varline], subs)
-                elif fields[varline] is not None and type(fields[varline]) == str:
+                elif fields[varline] is not None and isinstance(fields[varline], str):
                     _vars = variable.finditer(fields[varline])
                     for var in _vars:
                         subvar = var.group()[1:]
@@ -211,7 +213,7 @@ class Dashboard:
         if isinstance(value, dict):
             result = {}
             templates = {}
-            for (key, value) in value.items():
+            for key, value in value.items():
                 processed, t = self._do_subs(value, _vars)
                 result[key] = processed
                 templates = {**templates, **t}
@@ -315,7 +317,7 @@ class Dashboard:
                     widget = yamlfd.read()
                 final_widget = self._load_yaml(widget)
             except yaml.YAMLError as exc:
-                self._log_error(dash, name, "Error in widget definition '%s':".format(widget_type))
+                self._log_error(dash, name, f"Error in widget definition '{widget_type}':")
                 self._log_yaml_dash_error(dash, name, exc)
                 return self.error_widget("Error loading widget definition")
 
@@ -470,7 +472,7 @@ class Dashboard:
 
     def _load_yaml(self, stream):
         myyaml = None
-        yaml.add_constructor("!secret", ha._secret_yaml, Loader=yaml.SafeLoader)
+        yaml.add_constructor("!secret", ad_yaml._secret_yaml, Loader=yaml.SafeLoader)
         try:
             myyaml = yaml.load(stream, Loader=yaml.SafeLoader)
         except ValueError as v:
@@ -761,7 +763,6 @@ class Dashboard:
         return params
 
     def _conditional_compile(self, name, skin, recompile):
-
         #
         # Check skin exists
         #
@@ -869,9 +870,7 @@ class Dashboard:
     @_profile_this
     @_timeit
     def get_dashboard(self, name, skin, recompile):
-
         try:
-
             dash = self._conditional_compile(name, skin, recompile)
 
             if dash is None:
@@ -955,7 +954,6 @@ class Dashboard:
         return rendered_template
 
     def get_dashboard_list(self, paramOverwrite=None):
-
         if paramOverwrite is None:
             dash = self.list_dashes()
         else:

@@ -1,14 +1,30 @@
 import asyncio
+from logging import Logger
+from typing import TYPE_CHECKING, Any
 
-import appdaemon.utils as utils
-from appdaemon.appdaemon import AppDaemon
+from .utils.functools import get_kwargs
+
+if TYPE_CHECKING:
+    from .appdaemon import AppDaemon
 
 
 class Callbacks:
-    def __init__(self, ad: AppDaemon):
+    """Container for storing callbacks. Modified by :class:`~.events.Events` and :class:`~.state.State`"""
 
+    AD: "AppDaemon"
+    """Reference to the AppDaemon container object
+    """
+    logger: Logger
+    """Standard python logger named ``AppDaemon._callbacks``
+    """
+    diag: Logger
+    """Standard python logger named ``Diag``
+    """
+
+    callbacks: dict[str, dict[str, dict[str, Any]]]
+
+    def __init__(self, ad: "AppDaemon"):
         self.AD = ad
-
         self.callbacks = {}
         self.callbacks_lock = asyncio.Lock()
         self.logger = ad.logging.get_child("_callbacks")
@@ -19,6 +35,7 @@ class Callbacks:
     #
 
     async def dump_callbacks(self):
+        """Dumps info about the callbacks to the ``Diag`` log"""
         async with self.callbacks_lock:
             if self.callbacks == {}:
                 self.diag.info("No callbacks")
@@ -54,7 +71,7 @@ class Callbacks:
                             callbacks[name][str(uuid_)]["event"] = "None"
                         callbacks[name][str(uuid_)]["type"] = self.callbacks[name][uuid_]["type"]
                         callbacks[name][str(uuid_)]["kwargs"] = ""
-                        callbacks[name][str(uuid_)]["kwargs"] = utils.get_kwargs(self.callbacks[name][uuid_]["kwargs"])
+                        callbacks[name][str(uuid_)]["kwargs"] = get_kwargs(self.callbacks[name][uuid_]["kwargs"])
 
                         callbacks[name][str(uuid_)]["function"] = self.callbacks[name][uuid_]["function"].__name__
                         callbacks[name][str(uuid_)]["name"] = self.callbacks[name][uuid_]["name"]
@@ -63,20 +80,20 @@ class Callbacks:
                         )
                         callbacks[name][str(uuid_)]["pin_thread"] = (
                             self.callbacks[name][uuid_]["pin_thread"]
-                            if self.callbacks[name][uuid_]["pin_thread"] != -1
+                            if self.callbacks[name][uuid_]["pin_thread"] is not None
                             else "None"
                         )
         return callbacks
 
-    async def clear_callbacks(self, name):
-        self.logger.debug("Clearing callbacks for %s", name)
+    async def clear_callbacks(self, name: str) -> None:
         async with self.callbacks_lock:
-            if name in self.callbacks:
-                for cid in self.callbacks[name]:
-                    if self.callbacks[name][cid]["type"] == "event":
-                        await self.AD.state.remove_entity("admin", "event_callback.{}".format(cid))
-                    if self.callbacks[name][cid]["type"] == "state":
-                        await self.AD.state.remove_entity("admin", "state_callback.{}".format(cid))
-                    if self.callbacks[name][cid]["type"] == "log":
-                        await self.AD.state.remove_entity("admin", "log_callback.{}".format(cid))
-                del self.callbacks[name]
+            if (callbacks := self.callbacks.pop(name, None)) is not None:
+                self.logger.debug("Clearing callbacks for %s", name)
+                for cid, info in callbacks.items():
+                    match info:
+                        case {"type": "event"}:
+                            await self.AD.state.remove_entity("admin", f"event_callback.{cid}")
+                        case {"type": "state"}:
+                            await self.AD.state.remove_entity("admin", f"state_callback.{cid}")
+                        case {"type": "log"}:
+                            await self.AD.state.remove_entity("admin", f"log_callback.{cid}")

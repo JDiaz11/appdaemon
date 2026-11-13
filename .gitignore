@@ -10,6 +10,8 @@ __pycache__/
 .Python
 env/
 build/
+docker_build/
+docs_build/
 develop-eggs/
 dist/
 downloads/
@@ -44,6 +46,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+tests/conf/namespaces
 
 # Translations
 *.mo
@@ -54,10 +57,35 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+.docs_build
 
 # PyBuilder
 target/
 .idea/
 
+# Python
+venv
+.venv
+*.ipynb
+
 # Mac stuff
 .DS_Store
+
+# Vim
+*~
+
+# Ruff
+
+.ruff_cache
+
+# IDE
+
+#.vscode
+
+# Docs
+
+.docs_build
+
+
+# Nix devenv
+.devenv

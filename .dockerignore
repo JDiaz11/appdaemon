@@ -1,10 +1,21 @@
 .git
 .gitignore
+.github
+.pytest_cache
 
 Dockerfile
 .dockerignore
 
+.pre-commit-config.yaml
+
 *.md
+!LICENSE.md
 !README*.md
+MANIFEST.in
 *.rst
+
+# Documentation
 docs
+.readthedocs.yml
+
+.venv

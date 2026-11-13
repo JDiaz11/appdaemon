@@ -1,1 +1,3 @@
 test
+# avoid commitinng configuration files used during development of Docker build
+*.yaml
